@@ -2,6 +2,16 @@
 
 text font to text image node for InvokeAI, download a font to use (or if in font cache uses it from there), the text is always resized to the image size, but can control that with padding, optional 2nd line
 
+| Fields | Description |
+| -------- | ------------ |
+| Text Input | The text from which to generate an image|
+| Text Input Second Row | The second row of text to add below the first text |
+| font url | URL address of the font file to download |
+| image width | Width of the output image |
+| image height | Height of the output image |
+| padding | Padding around the text in pixels |
+| row gap | Gap between the two rows of text in pixels |
+
 ## Examples
 using Results after using the @LilleKemiker extrude node and depth controlnet
 
