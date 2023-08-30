@@ -3,16 +3,16 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import cv2
-from pydantic import Field
 import os
-
 from invokeai.app.models.image import ImageCategory, ResourceOrigin
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
     tags, title,
+    InputField,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
+
 
 @title("Text Font to Image")
 @tags("text", "mask", "font")
@@ -21,20 +21,24 @@ class TextfontimageInvocation(BaseInvocation):
 
     type: Literal["text_font_image"] = "text_font_image"
 
-    text_input: str = Field(
-        "Invoke AI", description="The text from which to generate an image"
+    text_input: str = InputField(
+        default="Invoke AI", description="The text from which to generate an image"
     )
-    text_input_second_row: Optional[str] = Field(
-        None, description="The second row of text to add below the first text"
+    text_input_second_row: Optional[str] = InputField(
+        description="The second row of text to add below the first text"
     )
-    font_url: Optional[str] = Field(
-        "https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
+    font_url: Optional[str] = InputField(
+        default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
         description="URL address of the font file to download",
     )
-    image_width: int = Field(1024, description="Width of the output image")
-    image_height: int = Field(512, description="Height of the output image")
-    padding: int = Field(100, description="Padding around the text in pixels")
-    row_gap: int = Field(50, description="Gap between the two rows of text in pixels")
+    image_width: int = InputField(
+        default=1024, description="Width of the output image")
+    image_height: int = InputField(
+        default=512, description="Height of the output image")
+    padding: int = InputField(
+        default=100, description="Padding around the text in pixels")
+    row_gap: int = InputField(
+        default=50, description="Gap between the two rows of text in pixels")
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -110,14 +114,16 @@ class TextfontimageInvocation(BaseInvocation):
 
             total_text_height = text_height + text_height_2 + row_gap
             text_image_width = max(text_width, text_width_2) + 2 * padding
-            text_image_height = max(total_text_height + 2 * padding, image_height)
+            text_image_height = max(
+                total_text_height + 2 * padding, image_height)
 
         else:
             text_image_width = text_width + 2 * padding
             text_image_height = text_height + 2 * padding
             total_text_height = text_height
 
-        text_image = Image.new("RGB", (text_image_width, text_image_height), (0, 0, 0))
+        text_image = Image.new(
+            "RGB", (text_image_width, text_image_height), (0, 0, 0))
         draw = ImageDraw.Draw(text_image)
 
         x = (text_image_width - text_width) // 2
