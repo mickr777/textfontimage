@@ -8,18 +8,14 @@ from invokeai.app.models.image import ImageCategory, ResourceOrigin
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
-    tags, title,
+    invocation,
     InputField,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
-
-@title("Text Font to Image")
-@tags("text", "mask", "font")
+@invocation("Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image")
 class TextfontimageInvocation(BaseInvocation):
     """Turn Text into an image"""
-
-    type: Literal["text_font_image"] = "text_font_image"
 
     text_input: str = InputField(
         default="Invoke AI", description="The text from which to generate an image"
