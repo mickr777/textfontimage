@@ -13,7 +13,7 @@ from invokeai.app.invocations.baseinvocation import (
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
-@invocation("Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image")
+@invocation("Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image", version="1.0.0")
 class TextfontimageInvocation(BaseInvocation):
     """Turn Text into an image"""
 
