@@ -557,8 +557,8 @@
       "width": 320,
       "height": 479,
       "position": {
-        "x": 684.2783390659508,
-        "y": -585.9822227499915
+        "x": -525,
+        "y": -950
       }
     },
     {
@@ -628,7 +628,7 @@
             "type": "string",
             "fieldKind": "input",
             "label": "",
-            "value": "Generative AI for Professional Creatives"
+            "value": ""
           },
           "second_row_font_size": {
             "id": "cd6f164a-ae9e-439e-b79c-e142e0651092",
