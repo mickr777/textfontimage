@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Optional
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
@@ -26,6 +26,9 @@ class TextfontimageInvocation(BaseInvocation):
     font_url: Optional[str] = InputField(
         default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
         description="URL address of the font file to download",
+    )
+    local_font_path: Optional[str] = InputField(
+        description="Local font file path (overrides font_url)"
     )
     image_width: int = InputField(
         default=1024, description="Width of the output image")
@@ -64,22 +67,33 @@ class TextfontimageInvocation(BaseInvocation):
     ) -> int:
         max_font_size = 1000
         font_size = max_font_size
-        font = ImageFont.truetype(font_path, font_size)
+
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except OSError as e:
+            raise ValueError(f"Error opening font file: {str(e)}")
+
         text_bbox = font.getbbox(text)
         text_width, text_height = (
             text_bbox[2] - text_bbox[0],
             text_bbox[3] - text_bbox[1],
         )
+        
         while (text_width + 2 * padding > image_width) or (
             text_height + 2 * padding > image_height
         ):
             font_size -= 1
-            font = ImageFont.truetype(font_path, font_size)
+            try:
+                font = ImageFont.truetype(font_path, font_size)
+            except OSError as e:
+                raise ValueError(f"Error opening font file: {str(e)}")
+            
             text_bbox = font.getbbox(text)
             text_width, text_height = (
                 text_bbox[2] - text_bbox[0],
                 text_bbox[3] - text_bbox[1],
             )
+        
         return font_size
 
     def text_to_image(
@@ -149,8 +163,15 @@ class TextfontimageInvocation(BaseInvocation):
     def invoke(self, context: InvocationContext) -> ImageOutput:
         if not self.text_input:
             raise ValueError("Text input is required.")
+        
+        if self.local_font_path:
+            font_path = self.local_font_path
+        else:
+            font_path = self.download_font(self.font_url)
 
-        font_path = self.download_font(self.font_url)
+        if not os.path.isfile(font_path):
+            print("\033[1;31mFont file not found. Please check the font file path.\033[0m")
+            return
 
         font_size = self.find_font_size(
             font_path,
