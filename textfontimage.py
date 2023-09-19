@@ -13,7 +13,7 @@ from invokeai.app.invocations.baseinvocation import (
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
-@invocation("Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image", version="1.0.0")
+@invocation("Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image", version="1.1.0")
 class TextfontimageInvocation(BaseInvocation):
     """Turn Text into an image"""
 
@@ -22,6 +22,9 @@ class TextfontimageInvocation(BaseInvocation):
     )
     text_input_second_row: Optional[str] = InputField(
         description="The second row of text to add below the first text"
+    )
+    second_row_font_size: Optional[int] = InputField(
+        default="35", description="Font size for the second row of text (optional)"
     )
     font_url: Optional[str] = InputField(
         default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
@@ -38,7 +41,7 @@ class TextfontimageInvocation(BaseInvocation):
         default=100, description="Padding around the text in pixels")
     row_gap: int = InputField(
         default=50, description="Gap between the two rows of text in pixels")
-
+    
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
         cache_dir = "font_cache"
@@ -102,6 +105,7 @@ class TextfontimageInvocation(BaseInvocation):
         text_second_row: Optional[str],
         font_path: str,
         font_size: int,
+        second_row_font_size: Optional[int],
         image_width: int,
         image_height: int,
         padding: int,
@@ -115,8 +119,10 @@ class TextfontimageInvocation(BaseInvocation):
             text_bbox[3] - text_bbox[1],
         )
 
-        if text_second_row:
-            text_bbox_2 = font.getbbox(text_second_row)
+        if text_second_row and second_row_font_size is not None:
+            second_row_font = ImageFont.truetype(font_path, second_row_font_size)
+
+            text_bbox_2 = second_row_font.getbbox(text_second_row)
             text_width_2, text_height_2 = (
                 text_bbox_2[2] - text_bbox_2[0],
                 text_bbox_2[3] - text_bbox_2[1],
@@ -141,14 +147,14 @@ class TextfontimageInvocation(BaseInvocation):
 
         draw.text((x, y - text_bbox[1]), text, fill=(255, 255, 255), font=font)
 
-        if text_second_row:
+        if text_second_row and second_row_font_size is not None:
             x = (text_image_width - text_width_2) // 2
             y += text_height + row_gap
             draw.text(
                 (x, y - text_bbox_2[1]),
                 text_second_row,
                 fill=(255, 255, 255),
-                font=font,
+                font=second_row_font,
             )
 
         image = Image.new("RGB", (image_width, image_height), (0, 0, 0))
@@ -181,11 +187,18 @@ class TextfontimageInvocation(BaseInvocation):
             self.padding,
         )
 
+        second_row_font_size = self.second_row_font_size
+
+        if second_row_font_size is None:
+            # Use the same font size as the first row
+            second_row_font_size = font_size
+
         text_image = self.text_to_image(
             self.text_input,
             self.text_input_second_row,
             font_path,
             font_size,
+            second_row_font_size,
             self.image_width,
             self.image_height,
             self.padding,
