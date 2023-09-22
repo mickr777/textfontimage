@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 import os
 import requests
 from PIL import Image, ImageDraw, ImageFont
@@ -16,8 +16,8 @@ def list_local_fonts() -> list:
     cache_dir = "font_cache"
     if not os.path.exists(cache_dir):
         return []
-    return [f for f in os.listdir(cache_dir) if f.lower().endswith((".ttf", ".otf"))]
-
+    fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith(('.ttf', '.otf'))]
+    return sorted(fonts, key=lambda x: x.lower())
 
 available_fonts = list_local_fonts()
 
