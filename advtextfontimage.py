@@ -16,8 +16,9 @@ def list_local_fonts() -> list:
     cache_dir = "font_cache"
     if not os.path.exists(cache_dir):
         return []
-    fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith(('.ttf', '.otf'))]
+    fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith((".ttf", ".otf"))]
     return sorted(fonts, key=lambda x: x.lower())
+
 
 available_fonts = list_local_fonts()
 
@@ -80,8 +81,6 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         if not os.path.isfile(font_path):
             print("\033[1;31mFont not found in cache, downloading...\033[0m")
             response = requests.get(font_url)
-            if response.status_code != 200:
-                raise ValueError("Failed to download the font from the provided URL.")
             with open(font_path, "wb") as f:
                 f.write(response.content)
         else:
@@ -133,7 +132,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         if not self.text_input:
             raise ValueError("Text input is required.")
 
-        if self.local_font:
+        if self.local_font and self.local_font != "None":
             font_path = os.path.join("font_cache", self.local_font)
         elif self.local_font_path:
             font_path = self.local_font_path
@@ -141,7 +140,8 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             font_path = self.download_font(self.font_url)
 
         if not os.path.isfile(font_path):
-            raise ValueError("Font file not found. Please check the font file path.")
+            print("\033[1;31mFont file not found. Please check the font file path.\033[0m")
+            return
 
         if not (10 <= self.font_size_first <= 400) or (
             self.font_size_second and not (10 <= self.font_size_second <= 400)
