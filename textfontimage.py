@@ -17,7 +17,7 @@ def list_local_fonts() -> list:
     cache_dir = "font_cache"
     if not os.path.exists(cache_dir):
         return []
-    return [f for f in os.listdir(cache_dir) if f.lower().endswith('.ttf')]
+    return [f for f in os.listdir(cache_dir) if f.lower().endswith(('.ttf', '.otf'))]
 
 available_fonts = list_local_fonts()
 
