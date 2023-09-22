@@ -12,6 +12,22 @@ from invokeai.app.invocations.baseinvocation import (
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
 
+def list_local_fonts() -> list:
+    cache_dir = "font_cache"
+    if not os.path.exists(cache_dir):
+        return []
+    return [f for f in os.listdir(cache_dir) if f.lower().endswith((".ttf", ".otf"))]
+
+
+available_fonts = list_local_fonts()
+
+if available_fonts:
+    fonts_str = ", ".join([repr(f) for f in available_fonts])
+    FontLiteral = eval(f'Literal["None", {fonts_str}]')
+else:
+    FontLiteral = Literal["None"]
+
+
 @invocation(
     "Advanced_Text_Font_to_Image",
     title="Advanced Text Font to Image",
@@ -29,12 +45,14 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         description="URL address of the font file to download",
     )
     local_font_path: Optional[str] = InputField(description="Local font file path (overrides font_url)")
+    local_font: Optional[FontLiteral] = InputField(
+        default=None, description="Name of the local font file to use from the font_cache folder"
+    )
     image_width: int = InputField(default=1024, description="Width of the output image")
     image_height: int = InputField(default=512, description="Height of the output image")
 
     font_color_first: str = InputField(
-            default="#FFFFFF",
-            description="Font color for the first row of text in HEX format (e.g., '#FFFFFF')"
+        default="#FFFFFF", description="Font color for the first row of text in HEX format (e.g., '#FFFFFF')"
     )
     x_position_first: int = InputField(default=0, description="X position of the first row of text")
     y_position_first: int = InputField(default=0, description="Y position of the first row of text")
@@ -42,8 +60,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
     font_size_first: Optional[int] = InputField(default=35, description="Font size for the first row of text")
 
     font_color_second: str = InputField(
-            default="#FFFFFF",
-            description="Font color for the second row of text in HEX format (e.g., '#FFFFFF')"
+        default="#FFFFFF", description="Font color for the second row of text in HEX format (e.g., '#FFFFFF')"
     )
     x_position_second: int = InputField(default=0, description="X position of the second row of text")
     y_position_second: int = InputField(default=0, description="Y position of the second row of text")
@@ -73,22 +90,21 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         return font_path
 
     def text_to_image_advanced(
-            self,
-            text_first: str,
-            text_second: Optional[str],
-            font_path: str,
-            x1: int,
-            y1: int,
-            rotation1: int,
-            font_size1: int,
-            x2: int,
-            y2: int,
-            rotation2: int,
-            font_size2: Optional[int],
-            base_image: Optional[ImageField],
-            context: InvocationContext,
+        self,
+        text_first: str,
+        text_second: Optional[str],
+        font_path: str,
+        x1: int,
+        y1: int,
+        rotation1: int,
+        font_size1: int,
+        x2: int,
+        y2: int,
+        rotation2: int,
+        font_size2: Optional[int],
+        base_image: Optional[ImageField],
+        context: InvocationContext,
     ) -> Image:
-
         if base_image and base_image.image_name:
             image = context.services.images.get_pil_image(base_image.image_name)
         else:
@@ -113,12 +129,13 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
 
         return image
 
-
     def invoke(self, context: InvocationContext) -> ImageOutput:
         if not self.text_input:
             raise ValueError("Text input is required.")
 
-        if self.local_font_path:
+        if self.local_font:
+            font_path = os.path.join("font_cache", self.local_font)
+        elif self.local_font_path:
             font_path = self.local_font_path
         else:
             font_path = self.download_font(self.font_url)
