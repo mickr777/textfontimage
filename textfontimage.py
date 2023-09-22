@@ -18,8 +18,9 @@ def list_local_fonts() -> list:
     cache_dir = "font_cache"
     if not os.path.exists(cache_dir):
         return []
-    fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith(('.ttf', '.otf'))]
+    fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith((".ttf", ".otf"))]
     return sorted(fonts, key=lambda x: x.lower())
+
 
 available_fonts = list_local_fonts()
 
@@ -175,6 +176,8 @@ class TextfontimageInvocation(BaseInvocation):
         return image
 
     def invoke(self, context: InvocationContext) -> ImageOutput:
+        if not self.text_input:
+            raise ValueError("Text input is required.")
         if self.local_font and self.local_font != "None":
             font_path = os.path.join("font_cache", self.local_font)
         elif self.local_font_path:
