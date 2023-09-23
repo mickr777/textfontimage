@@ -2,15 +2,43 @@
 
 text font to text image node for InvokeAI, download a font to use (or if in font cache uses it from there), the text is always resized to the image size, but can control that with padding, optional 2nd line
 
-| Fields | Description |
-| -------- | ------------ |
-| Text Input | The text from which to generate an image|
-| Text Input Second Row | The second row of text to add below the first text |
-| font url | URL address of the font file to download |
-| image width | Width of the output image |
-| image height | Height of the output image |
-| padding | Padding around the text in pixels |
-| row gap | Gap between the two rows of text in pixels |
+Text Font to Image Node
+
+| Fields                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| text_input               | The text from which to generate an image               |
+| text_input_second_row    | The second row of text to add below the first text     |
+| second_row_font_size     | Font size for the second row of text (optional)        |
+| font_url                | URL address of the font file to download               |
+| local_font_path         | Local font file path (overrides font_url)              |
+| local_font              | Name of the local font file to use from the font_cache folder |
+| image_width              | Width of the output image                              |
+| image_height             | Height of the output image                             |
+| padding                  | Padding around the text in pixels                       |
+| row_gap                  | Gap between the two rows of text in pixels 
+
+Advanced Text Font to Image Node
+
+| Fields                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| text_input               | The text from which to generate an image               |
+| text_input_second_row    | The second row of text to add below the first text     |
+| font_url                | URL address of the font file to download               |
+| local_font_path         | Local font file path (overrides font_url)              |
+| local_font              | Name of the local font file to use from the font_cache folder |
+| image_width              | Width of the output image                              |
+| image_height             | Height of the output image                             |
+| font_color_first         | Font color for the first row of text in HEX format     |
+| x_position_first         | X position of the first row of text                    |
+| y_position_first         | Y position of the first row of text                    |
+| rotation_first           | Rotation angle of the first row of text (in degrees)   |
+| font_size_first          | Font size for the first row of text                     |
+| font_color_second        | Font color for the second row of text in HEX format    |
+| x_position_second        | X position of the second row of text                   |
+| y_position_second        | Y position of the second row of text                   |
+| rotation_second          | Rotation angle of the second row of text (in degrees)  |
+| font_size_second         | Font size for the second row of text                    |
+| base_image               | An image to place the text onto      
 
 ## Examples
 using Results after using the @LilleKemiker extrude node and depth controlnet
