@@ -2,6 +2,9 @@
 
 text font to text image node for InvokeAI, download a font to use (or if in font cache uses it from there), the text is always resized to the image size, but can control that with padding, optional 2nd line
 
+* simple node textfontimage.py (Simple centered 2 line's of Texted)
+* more advanced node advtextfontimage.py (gives you alot more control over text size and location)
+
 Text Font to Image Node
 
 | Fields                  | Description                                            |
