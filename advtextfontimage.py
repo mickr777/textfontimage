@@ -8,9 +8,10 @@ from invokeai.app.invocations.baseinvocation import (
     InvocationContext,
     invocation,
     InputField,
+    FieldDescriptions,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
-
+from invokeai.app.invocations.metadata import CoreMetadata
 
 def list_local_fonts() -> list:
     cache_dir = "font_cache"
@@ -34,7 +35,7 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.2.0",
+    version="1.3.0",
 )
 class AdvancedTextFontImageInvocation(BaseInvocation):
     """Overlay Text onto an image or blank canvas."""
@@ -69,6 +70,11 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
     font_size_second: Optional[int] = InputField(default=35, description="Font size for the second row of text")
 
     base_image: Optional[ImageField] = InputField(description="An image to place the text onto")
+    metadata: CoreMetadata = InputField(
+        default=None,
+        description=FieldDescriptions.core_metadata,
+        ui_hidden=True,
+    )
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -171,6 +177,8 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
+            metadata=self.metadata.dict() if self.metadata else None,
+            workflow=self.workflow,
         )
 
         return ImageOutput(
