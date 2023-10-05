@@ -10,8 +10,10 @@ from invokeai.app.invocations.baseinvocation import (
     InvocationContext,
     invocation,
     InputField,
+    FieldDescriptions,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
+from invokeai.app.invocations.metadata import CoreMetadata
 
 
 def list_local_fonts() -> list:
@@ -32,7 +34,11 @@ else:
 
 
 @invocation(
-    "Text_Font_to_Image", title="Text Font to Image", tags=["text", "mask", "font"], category="image", version="1.1.0"
+    "Text_Font_to_Image", 
+    title="Text Font to Image", 
+    tags=["text", "mask", "font"], 
+    category="image", 
+    version="1.2.0"
 )
 class TextfontimageInvocation(BaseInvocation):
     """Turn Text into an image"""
@@ -54,6 +60,11 @@ class TextfontimageInvocation(BaseInvocation):
     image_height: int = InputField(default=512, description="Height of the output image")
     padding: int = InputField(default=100, description="Padding around the text in pixels")
     row_gap: int = InputField(default=50, description="Gap between the two rows of text in pixels")
+    metadata: CoreMetadata = InputField(
+        default=None,
+        description=FieldDescriptions.core_metadata,
+        ui_hidden=True,
+    )
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -225,6 +236,8 @@ class TextfontimageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
+            metadata=self.metadata.dict() if self.metadata else None,
+            workflow=self.workflow,
         )
 
         return ImageOutput(
