@@ -4,20 +4,23 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import cv2
 import os
-from invokeai.app.models.image import ImageCategory, ResourceOrigin
+from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
     invocation,
     InputField,
     FieldDescriptions,
+    WithMetadata,
+    WithWorkflow,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
-from invokeai.app.invocations.metadata import CoreMetadata
 
+cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font_cache")
+
+os.makedirs(cache_dir, exist_ok=True)
 
 def list_local_fonts() -> list:
-    cache_dir = "font_cache"
     if not os.path.exists(cache_dir):
         return []
     fonts = [f for f in os.listdir(cache_dir) if f.lower().endswith((".ttf", ".otf"))]
@@ -38,9 +41,10 @@ else:
     title="Text Font to Image", 
     tags=["text", "mask", "font"], 
     category="image", 
-    version="1.2.0"
+    version="1.2.0",
+    use_cache=False
 )
-class TextfontimageInvocation(BaseInvocation):
+class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
     """Turn Text into an image"""
 
     text_input: str = InputField(default="Invoke AI", description="The text from which to generate an image")
@@ -53,23 +57,17 @@ class TextfontimageInvocation(BaseInvocation):
         description="URL address of the font file to download",
     )
     local_font_path: Optional[str] = InputField(description="Local font file path (overrides font_url)")
-    local_font: Optional[FontLiteral] = InputField(
+    local_font: FontLiteral = InputField(
         default=None, description="Name of the local font file to use from the font_cache folder"
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
     image_height: int = InputField(default=512, description="Height of the output image")
     padding: int = InputField(default=100, description="Padding around the text in pixels")
     row_gap: int = InputField(default=50, description="Gap between the two rows of text in pixels")
-    metadata: CoreMetadata = InputField(
-        default=None,
-        description=FieldDescriptions.core_metadata,
-        ui_hidden=True,
-    )
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
-        cache_dir = "font_cache"
-        font_path = f"{cache_dir}/{font_filename}"
+        font_path = os.path.join(cache_dir, font_filename)
 
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
@@ -236,7 +234,7 @@ class TextfontimageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.dict() if self.metadata else None,
+            metadata=self.metadata,
             workflow=self.workflow,
         )
 
