@@ -2,16 +2,21 @@ from typing import Optional, Literal
 import os
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from invokeai.app.models.image import ImageCategory, ResourceOrigin
+from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
     invocation,
     InputField,
     FieldDescriptions,
+    WithMetadata,
+    WithWorkflow,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
-from invokeai.app.invocations.metadata import CoreMetadata
+
+cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font_cache")
+
+os.makedirs(cache_dir, exist_ok=True)
 
 def list_local_fonts() -> list:
     cache_dir = "font_cache"
@@ -36,8 +41,9 @@ else:
     tags=["text", "overlay", "font"],
     category="image",
     version="1.3.0",
+    use_cache=False
 )
-class AdvancedTextFontImageInvocation(BaseInvocation):
+class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
     """Overlay Text onto an image or blank canvas."""
 
     text_input: str = InputField(default="Invoke AI", description="The text from which to generate an image")
@@ -47,7 +53,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         description="URL address of the font file to download",
     )
     local_font_path: Optional[str] = InputField(description="Local font file path (overrides font_url)")
-    local_font: Optional[FontLiteral] = InputField(
+    local_font: FontLiteral = InputField(
         default=None, description="Name of the local font file to use from the font_cache folder"
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
@@ -69,12 +75,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
     rotation_second: int = InputField(default=0, description="Rotation angle of the second row of text (in degrees)")
     font_size_second: Optional[int] = InputField(default=35, description="Font size for the second row of text")
 
-    base_image: Optional[ImageField] = InputField(description="An image to place the text onto")
-    metadata: CoreMetadata = InputField(
-        default=None,
-        description=FieldDescriptions.core_metadata,
-        ui_hidden=True,
-    )
+    input_image: Optional[ImageField] = InputField(default=None, description="An image to place the text onto")
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -107,11 +108,11 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         y2: int,
         rotation2: int,
         font_size2: Optional[int],
-        base_image: Optional[ImageField],
+        input_image: Optional[ImageField],
         context: InvocationContext,
     ) -> Image:
-        if base_image and base_image.image_name:
-            image = context.services.images.get_pil_image(base_image.image_name)
+        if input_image and input_image.image_name:
+            image = context.services.images.get_pil_image(input_image.image_name)
         else:
             image = Image.new("RGB", (self.image_width, self.image_height), (0, 0, 0))
 
@@ -166,7 +167,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             self.y_position_second,
             self.rotation_second,
             self.font_size_second,
-            self.base_image,
+            self.input_image,
             context,
         )
 
@@ -177,7 +178,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.dict() if self.metadata else None,
+            metadata=self.metadata,
             workflow=self.workflow,
         )
 
