@@ -2,13 +2,15 @@ from typing import Optional, Literal
 import os
 import requests
 from PIL import Image, ImageDraw, ImageFont
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
+from invokeai.app.services.image_records.image_records_common import (
+    ImageCategory,
+    ResourceOrigin,
+)
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
     invocation,
     InputField,
-    FieldDescriptions,
     WithMetadata,
     WithWorkflow,
 )
@@ -17,6 +19,7 @@ from invokeai.app.invocations.primitives import ImageField, ImageOutput
 cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font_cache")
 
 os.makedirs(cache_dir, exist_ok=True)
+
 
 def list_local_fonts() -> list:
     cache_dir = "font_cache"
@@ -40,42 +43,71 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.3.0",
-    use_cache=False
+    version="1.3.4",
+    use_cache=False,
 )
 class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
     """Overlay Text onto an image or blank canvas."""
 
-    text_input: str = InputField(default="Invoke AI", description="The text from which to generate an image")
-    text_input_second_row: Optional[str] = InputField(description="The second row of text to add below the first text")
+    text_input: str = InputField(
+        default="Invoke AI", description="The text from which to generate an image"
+    )
+    text_input_second_row: Optional[str] = InputField(
+        description="The second row of text to add below the first text"
+    )
     font_url: Optional[str] = InputField(
         default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
         description="URL address of the font file to download",
     )
-    local_font_path: Optional[str] = InputField(description="Local font file path (overrides font_url)")
+    local_font_path: Optional[str] = InputField(
+        description="Local font file path (overrides font_url)"
+    )
     local_font: FontLiteral = InputField(
-        default=None, description="Name of the local font file to use from the font_cache folder"
+        default=None,
+        description="Name of the local font file to use from the font_cache folder",
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
-    image_height: int = InputField(default=512, description="Height of the output image")
+    image_height: int = InputField(
+        default=512, description="Height of the output image"
+    )
 
     font_color_first: str = InputField(
-        default="#FFFFFF", description="Font color for the first row of text in HEX format (e.g., '#FFFFFF')"
+        default="#FFFFFF",
+        description="Font color for the first row of text in HEX format (e.g., '#FFFFFF')",
     )
-    x_position_first: int = InputField(default=0, description="X position of the first row of text")
-    y_position_first: int = InputField(default=0, description="Y position of the first row of text")
-    rotation_first: int = InputField(default=0, description="Rotation angle of the first row of text (in degrees)")
-    font_size_first: Optional[int] = InputField(default=35, description="Font size for the first row of text")
+    x_position_first: int = InputField(
+        default=0, description="X position of the first row of text"
+    )
+    y_position_first: int = InputField(
+        default=0, description="Y position of the first row of text"
+    )
+    rotation_first: int = InputField(
+        default=0, description="Rotation angle of the first row of text (in degrees)"
+    )
+    font_size_first: Optional[int] = InputField(
+        default=35, description="Font size for the first row of text"
+    )
 
     font_color_second: str = InputField(
-        default="#FFFFFF", description="Font color for the second row of text in HEX format (e.g., '#FFFFFF')"
+        default="#FFFFFF",
+        description="Font color for the second row of text in HEX format (e.g., '#FFFFFF')",
     )
-    x_position_second: int = InputField(default=0, description="X position of the second row of text")
-    y_position_second: int = InputField(default=0, description="Y position of the second row of text")
-    rotation_second: int = InputField(default=0, description="Rotation angle of the second row of text (in degrees)")
-    font_size_second: Optional[int] = InputField(default=35, description="Font size for the second row of text")
+    x_position_second: int = InputField(
+        default=0, description="X position of the second row of text"
+    )
+    y_position_second: int = InputField(
+        default=0, description="Y position of the second row of text"
+    )
+    rotation_second: int = InputField(
+        default=0, description="Rotation angle of the second row of text (in degrees)"
+    )
+    font_size_second: Optional[int] = InputField(
+        default=35, description="Font size for the second row of text"
+    )
 
-    input_image: Optional[ImageField] = InputField(default=None, description="An image to place the text onto")
+    input_image: Optional[ImageField] = InputField(
+        default=None, description="An image to place the text onto"
+    )
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -121,7 +153,9 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
         d1 = ImageDraw.Draw(text_img1)
         d1.text((x1, y1), text_first, fill=self.font_color_first, font=font1)
         if rotation1 != 0:
-            text_img1 = text_img1.rotate(-rotation1, resample=Image.BICUBIC, center=(x1, y1))
+            text_img1 = text_img1.rotate(
+                -rotation1, resample=Image.BICUBIC, center=(x1, y1)
+            )
         image.paste(text_img1, (0, 0), text_img1)
 
         if text_second and font_size2:
@@ -130,7 +164,9 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
             d2 = ImageDraw.Draw(text_img2)
             d2.text((x2, y2), text_second, fill=self.font_color_second, font=font2)
             if rotation2 != 0:
-                text_img2 = text_img2.rotate(-rotation2, resample=Image.BICUBIC, center=(x2, y2))
+                text_img2 = text_img2.rotate(
+                    -rotation2, resample=Image.BICUBIC, center=(x2, y2)
+                )
             image.paste(text_img2, (0, 0), text_img2)
 
         return image
@@ -147,7 +183,9 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
             font_path = self.download_font(self.font_url)
 
         if not os.path.isfile(font_path):
-            print("\033[1;31mFont file not found. Please check the font file path.\033[0m")
+            print(
+                "\033[1;31mFont file not found. Please check the font file path.\033[0m"
+            )
             return
 
         if not (10 <= self.font_size_first <= 400) or (
@@ -171,7 +209,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
             context,
         )
 
-        mask_dto = context.services.images.create(
+        image_dto = context.services.images.create(
             image=final_image,
             image_origin=ResourceOrigin.INTERNAL,
             image_category=ImageCategory.GENERAL,
@@ -183,7 +221,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
         )
 
         return ImageOutput(
-            image=ImageField(image_name=mask_dto.image_name),
-            width=mask_dto.width,
-            height=mask_dto.height,
+            image=ImageField(image_name=image_dto.image_name),
+            width=image_dto.width,
+            height=image_dto.height,
         )
