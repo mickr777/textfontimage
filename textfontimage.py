@@ -4,13 +4,15 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import cv2
 import os
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
+from invokeai.app.services.image_records.image_records_common import (
+    ImageCategory,
+    ResourceOrigin,
+)
 from invokeai.app.invocations.baseinvocation import (
     BaseInvocation,
     InvocationContext,
     invocation,
     InputField,
-    FieldDescriptions,
     WithMetadata,
     WithWorkflow,
 )
@@ -19,6 +21,7 @@ from invokeai.app.invocations.primitives import ImageField, ImageOutput
 cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font_cache")
 
 os.makedirs(cache_dir, exist_ok=True)
+
 
 def list_local_fonts() -> list:
     if not os.path.exists(cache_dir):
@@ -37,18 +40,22 @@ else:
 
 
 @invocation(
-    "Text_Font_to_Image", 
-    title="Text Font to Image", 
-    tags=["text", "mask", "font"], 
-    category="image", 
-    version="1.2.0",
-    use_cache=False
+    "Text_Font_to_Image",
+    title="Text Font to Image",
+    tags=["text", "mask", "font"],
+    category="image",
+    version="1.3.4",
+    use_cache=False,
 )
 class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
     """Turn Text into an image"""
 
-    text_input: str = InputField(default="Invoke AI", description="The text from which to generate an image")
-    text_input_second_row: Optional[str] = InputField(description="The second row of text to add below the first text")
+    text_input: str = InputField(
+        default="Invoke AI", description="The text from which to generate an image"
+    )
+    text_input_second_row: Optional[str] = InputField(
+        description="The second row of text to add below the first text"
+    )
     second_row_font_size: Optional[int] = InputField(
         default="35", description="Font size for the second row of text (optional)"
     )
@@ -56,14 +63,23 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
         default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
         description="URL address of the font file to download",
     )
-    local_font_path: Optional[str] = InputField(description="Local font file path (overrides font_url)")
+    local_font_path: Optional[str] = InputField(
+        description="Local font file path (overrides font_url)"
+    )
     local_font: FontLiteral = InputField(
-        default=None, description="Name of the local font file to use from the font_cache folder"
+        default=None,
+        description="Name of the local font file to use from the font_cache folder",
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
-    image_height: int = InputField(default=512, description="Height of the output image")
-    padding: int = InputField(default=100, description="Padding around the text in pixels")
-    row_gap: int = InputField(default=50, description="Gap between the two rows of text in pixels")
+    image_height: int = InputField(
+        default=512, description="Height of the output image"
+    )
+    padding: int = InputField(
+        default=100, description="Padding around the text in pixels"
+    )
+    row_gap: int = InputField(
+        default=50, description="Gap between the two rows of text in pixels"
+    )
 
     def download_font(self, font_url: str) -> str:
         font_filename = font_url.split("/")[-1]
@@ -104,7 +120,9 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
             text_bbox[3] - text_bbox[1],
         )
 
-        while (text_width + 2 * padding > image_width) or (text_height + 2 * padding > image_height):
+        while (text_width + 2 * padding > image_width) or (
+            text_height + 2 * padding > image_height
+        ):
             font_size -= 1
             try:
                 font = ImageFont.truetype(font_path, font_size)
@@ -195,7 +213,9 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
             font_path = self.download_font(self.font_url)
 
         if not os.path.isfile(font_path):
-            print("\033[1;31mFont file not found. Please check the font file path.\033[0m")
+            print(
+                "\033[1;31mFont file not found. Please check the font file path.\033[0m"
+            )
             return
 
         font_size = self.find_font_size(
@@ -227,10 +247,10 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
 
         pil_mask = Image.fromarray(cv_mask)
 
-        mask_dto = context.services.images.create(
+        image_dto = context.services.images.create(
             image=pil_mask,
             image_origin=ResourceOrigin.INTERNAL,
-            image_category=ImageCategory.CONTROL,
+            image_category=ImageCategory.GENERAL,
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
@@ -239,7 +259,7 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
         )
 
         return ImageOutput(
-            image=ImageField(image_name=mask_dto.image_name),
-            width=mask_dto.width,
-            height=mask_dto.height,
+            image=ImageField(image_name=image_dto.image_name),
+            width=image_dto.width,
+            height=image_dto.height,
         )
