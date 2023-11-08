@@ -57,7 +57,7 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
         description="The second row of text to add below the first text"
     )
     second_row_font_size: Optional[int] = InputField(
-        default="35", description="Font size for the second row of text (optional)"
+        default=35, description="Font size for the second row of text (optional)"
     )
     font_url: Optional[str] = InputField(
         default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
