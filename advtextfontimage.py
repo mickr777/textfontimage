@@ -12,7 +12,6 @@ from invokeai.app.invocations.baseinvocation import (
     invocation,
     InputField,
     WithMetadata,
-    WithWorkflow,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
@@ -43,10 +42,10 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.3.4",
+    version="1.3.5",
     use_cache=False,
 )
-class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow):
+class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata):
     """Overlay Text onto an image or blank canvas."""
 
     text_input: str = InputField(
@@ -217,7 +216,6 @@ class AdvancedTextFontImageInvocation(BaseInvocation, WithMetadata, WithWorkflow
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
             metadata=self.metadata,
-            workflow=self.workflow,
         )
 
         return ImageOutput(
