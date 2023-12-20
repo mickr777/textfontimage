@@ -19,7 +19,7 @@ from PIL import Image
     title="Extrude Depth from Mask",
     tags=["cv", "mask", "depth"],
     category="controlnet",
-    version="1.3.4",
+    version="1.3.5",
     use_cache=False,
 )
 class ExtrudeDepthInvocation(BaseInvocation):
