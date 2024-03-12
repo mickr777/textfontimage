@@ -1,29 +1,25 @@
 import cv2
 import numpy as np
-from invokeai.app.invocations.baseinvocation import (
+from PIL import Image
+from invokeai.invocation_api import (
     BaseInvocation,
-    InputField,
     InvocationContext,
     invocation,
+    InputField,
+    ImageField,
+    ImageOutput,
 )
-from invokeai.app.services.image_records.image_records_common import (
-    ImageCategory,
-    ResourceOrigin,
-)
-from invokeai.app.invocations.primitives import ImageField, ImageOutput
-from PIL import Image
-
 
 @invocation(
     "cv_extrude_depth",
     title="Extrude Depth from Mask",
     tags=["cv", "mask", "depth"],
     category="controlnet",
-    version="1.3.5",
+    version="1.4.0",
     use_cache=False,
 )
 class ExtrudeDepthInvocation(BaseInvocation):
-    """Node for creating fake depth by "extruding" a mask using opencv."""
+    """Node for creating fake depth by "extruding" a mask using OpenCV."""
 
     mask: ImageField = InputField(
         default=None, description="The mask from which to extrude"
@@ -79,39 +75,20 @@ class ExtrudeDepthInvocation(BaseInvocation):
         return canvas.astype(np.uint8)
 
     def invoke(self, context: InvocationContext) -> ImageOutput:
-        mask = context.services.images.get_pil_image(self.mask.image_name)
+        mask = context.images.get_pil(self.mask.image_name)
 
-        # Convert to numpy and only one channel
         cv_mask = np.array(mask)
         if cv_mask.ndim == 3 and cv_mask.shape[-1] == 4:
-            # Use alpha channel as mask - Does this make sense in general?
             cv_mask = cv_mask[:, :, -1]
-            # invert uint8 (0, 1, ..., 255 -> 255, 254, ..., 0)
-            cv_mask = (-1 - cv_mask).astype(np.uint8)
         elif cv_mask.ndim == 3:
-            # RGB -> Grayscale
             cv_mask = cv2.cvtColor(cv_mask, cv2.COLOR_RGB2GRAY)
 
         if self.invert:
-            # invert uint8 (0, 1, ..., 255 -> 255, 254, ..., 0)
-            cv_mask = (-1 - cv_mask).astype(np.uint8)
+            cv_mask = cv2.bitwise_not(cv_mask)
 
-        # Extrude
         cv_extruded = self.extrude(cv_mask)
 
-        # Convert back to Pillow
-        pil_extruded = Image.fromarray(cv2.cvtColor(cv_extruded, cv2.COLOR_GRAY2RGB))
+        pil_extruded = Image.fromarray(cv_extruded)
 
-        mask_dto = context.services.images.create(
-            image=pil_extruded,
-            image_origin=ResourceOrigin.INTERNAL,
-            image_category=ImageCategory.GENERAL,
-            node_id=self.id,
-            session_id=context.graph_execution_state_id,
-            is_intermediate=self.is_intermediate,
-        )
-        return ImageOutput(
-            image=ImageField(image_name=mask_dto.image_name),
-            width=mask_dto.width,
-            height=mask_dto.height,
-        )
+        mask_dto = context.images.save(image=pil_extruded)
+        return ImageOutput.build(mask_dto)
