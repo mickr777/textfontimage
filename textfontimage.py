@@ -4,18 +4,14 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import cv2
 import os
-from invokeai.app.services.image_records.image_records_common import (
-    ImageCategory,
-    ResourceOrigin,
-)
-from invokeai.app.invocations.baseinvocation import (
+from invokeai.invocation_api import (
     BaseInvocation,
     InvocationContext,
     invocation,
     InputField,
-    WithMetadata,
+    ImageField, 
+    ImageOutput,
 )
-from invokeai.app.invocations.primitives import ImageField, ImageOutput
 
 cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "font_cache")
 
@@ -46,7 +42,7 @@ else:
     version="1.3.5",
     use_cache=False,
 )
-class TextfontimageInvocation(BaseInvocation, WithMetadata):
+class TextfontimageInvocation(BaseInvocation):
     """Turn Text into an image"""
 
     text_input: str = InputField(
@@ -246,15 +242,7 @@ class TextfontimageInvocation(BaseInvocation, WithMetadata):
 
         pil_mask = Image.fromarray(cv_mask)
 
-        image_dto = context.services.images.create(
-            image=pil_mask,
-            image_origin=ResourceOrigin.INTERNAL,
-            image_category=ImageCategory.GENERAL,
-            node_id=self.id,
-            session_id=context.graph_execution_state_id,
-            is_intermediate=self.is_intermediate,
-            metadata=self.metadata,
-        )
+        image_dto = context.images.save(image=pil_mask)
 
         return ImageOutput(
             image=ImageField(image_name=image_dto.image_name),
