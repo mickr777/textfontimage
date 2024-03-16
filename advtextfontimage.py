@@ -39,7 +39,7 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.4.0",
+    version="1.4.1",
     use_cache=False,
 )
 class AdvancedTextFontImageInvocation(BaseInvocation):
