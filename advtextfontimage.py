@@ -140,7 +140,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         context: InvocationContext,
     ) -> Image:
         if input_image and input_image.image_name:
-            image = context.services.images.get_pil_image(input_image.image_name)
+            image = context.images.get_pil(input_image.image_name)
         else:
             image = Image.new("RGB", (self.image_width, self.image_height), (0, 0, 0))
 
