@@ -39,7 +39,7 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.4.1",
+    version="1.4.2",
     use_cache=False,
 )
 class AdvancedTextFontImageInvocation(BaseInvocation):
@@ -184,10 +184,10 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             )
             return
 
-        if not (10 <= self.font_size_first <= 400) or (
-            self.font_size_second and not (10 <= self.font_size_second <= 400)
+        if not (10 <= self.font_size_first <= 1000) or (
+            self.font_size_second and not (10 <= self.font_size_second <= 1000)
         ):
-            raise ValueError("Font size is not within a reasonable range (10-400).")
+            raise ValueError("Font size is not within a reasonable range (10-1000).")
 
         final_image = self.text_to_image_advanced(
             self.text_input,
