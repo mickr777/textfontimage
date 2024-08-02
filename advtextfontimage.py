@@ -39,7 +39,7 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.4.2",
+    version="1.4.5",
     use_cache=False,
 )
 class AdvancedTextFontImageInvocation(BaseInvocation):
@@ -149,10 +149,8 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         d1 = ImageDraw.Draw(text_img1)
         d1.text((x1, y1), text_first, fill=self.font_color_first, font=font1)
         if rotation1 != 0:
-            text_img1 = text_img1.rotate(
-                -rotation1, resample=Image.BICUBIC, center=(x1, y1)
-            )
-        image.paste(text_img1, (0, 0), text_img1)
+            text_img1 = text_img1.rotate(-rotation1, resample=Image.BICUBIC, center=(x1, y1))
+        image = Image.alpha_composite(image.convert("RGBA"), text_img1)
 
         if text_second and font_size2:
             font2 = ImageFont.truetype(font_path, font_size2)
@@ -160,12 +158,10 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
             d2 = ImageDraw.Draw(text_img2)
             d2.text((x2, y2), text_second, fill=self.font_color_second, font=font2)
             if rotation2 != 0:
-                text_img2 = text_img2.rotate(
-                    -rotation2, resample=Image.BICUBIC, center=(x2, y2)
-                )
-            image.paste(text_img2, (0, 0), text_img2)
+                text_img2 = text_img2.rotate(-rotation2, resample=Image.BICUBIC, center=(x2, y2))
+            image = Image.alpha_composite(image.convert("RGBA"), text_img2)
 
-        return image
+        return image.convert("RGB")
 
     def invoke(self, context: InvocationContext) -> ImageOutput:
         if not self.text_input:
