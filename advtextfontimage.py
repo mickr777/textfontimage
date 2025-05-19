@@ -39,7 +39,7 @@ else:
     title="Advanced Text Font to Image",
     tags=["text", "overlay", "font"],
     category="image",
-    version="1.4.5",
+    version="1.4.6",
     use_cache=False,
 )
 class AdvancedTextFontImageInvocation(BaseInvocation):
@@ -59,7 +59,7 @@ class AdvancedTextFontImageInvocation(BaseInvocation):
         description="Local font file path (overrides font_url)"
     )
     local_font: FontLiteral = InputField(
-        default=None,
+        default="None",
         description="Name of the local font file to use from the font_cache folder",
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
