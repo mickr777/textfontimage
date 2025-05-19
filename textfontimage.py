@@ -39,7 +39,7 @@ else:
     title="Text Font to Image",
     tags=["text", "mask", "font"],
     category="image",
-    version="1.3.5",
+    version="1.3.6",
     use_cache=False,
 )
 class TextfontimageInvocation(BaseInvocation):
@@ -62,7 +62,7 @@ class TextfontimageInvocation(BaseInvocation):
         description="Local font file path (overrides font_url)"
     )
     local_font: FontLiteral = InputField(
-        default=None,
+        default="None",
         description="Name of the local font file to use from the font_cache folder",
     )
     image_width: int = InputField(default=1024, description="Width of the output image")
