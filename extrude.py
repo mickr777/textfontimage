@@ -15,7 +15,7 @@ from invokeai.invocation_api import (
     title="Extrude Depth from Mask",
     tags=["cv", "mask", "depth"],
     category="controlnet",
-    version="1.4.0",
+    version="1.4.1",
     use_cache=False,
 )
 class ExtrudeDepthInvocation(BaseInvocation):
