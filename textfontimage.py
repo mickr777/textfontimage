@@ -55,7 +55,7 @@ class TextfontimageInvocation(BaseInvocation):
         default=35, description="Font size for the second row of text (optional)"
     )
     font_url: Optional[str] = InputField(
-        default="https://candyfonts.com/wp-data/2019/04/06/51421/ARIALBD.TTF",
+        default="https://www.1001fonts.com/download/font/caliban.medium.ttf",
         description="URL address of the font file to download",
     )
     local_font_path: Optional[str] = InputField(
