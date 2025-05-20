@@ -23,7 +23,7 @@ class ExtrudeDepthInvocation(BaseInvocation):
     """Node for creating fake depth by "extruding" a mask using OpenCV."""
 
     mask: Optional[ImageField] = InputField(
-    default=None, description="The mask from which to extrude"
+        default=None, description="The mask from which to extrude"
     )
     direction: float = InputField(
         default=45.0, description="Extrude direction in degrees"
