@@ -9,20 +9,21 @@ from invokeai.invocation_api import (
     ImageField,
     ImageOutput,
 )
+from typing import Optional
 
 @invocation(
     "cv_extrude_depth",
     title="Extrude Depth from Mask",
     tags=["cv", "mask", "depth"],
     category="controlnet",
-    version="1.4.1",
+    version="1.4.0",
     use_cache=False,
 )
 class ExtrudeDepthInvocation(BaseInvocation):
     """Node for creating fake depth by "extruding" a mask using OpenCV."""
 
-    mask: ImageField = InputField(
-        default="None", description="The mask from which to extrude"
+    mask: Optional[ImageField] = InputField(
+    default=None, description="The mask from which to extrude"
     )
     direction: float = InputField(
         default=45.0, description="Extrude direction in degrees"
